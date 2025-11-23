@@ -67,33 +67,18 @@ export default function RegisterPage() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">İsim</Label>
-              <Input
-                id="firstName"
-                placeholder="İsim"
-                {...register("firstName")}
-              />
-              {errors.firstName && (
-                <p className="text-sm text-red-500">
-                  {errors.firstName.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Soyisim</Label>
-              <Input
-                id="lastName"
-                placeholder="Soyisim"
-                {...register("lastName")}
-              />
-              {errors.lastName && (
-                <p className="text-sm text-red-500">
-                  {errors.lastName.message}
-                </p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="username">Kullanıcı Adı</Label>
+            <Input
+              id="username"
+              placeholder="kullanici_adi"
+              {...register("username")}
+            />
+            {errors.username && (
+              <p className="text-sm text-red-500">
+                {errors.username.message}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

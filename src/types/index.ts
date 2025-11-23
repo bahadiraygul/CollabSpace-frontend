@@ -23,12 +23,56 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+  username: string;
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
 }
 
 export interface RefreshRequest {
   refreshToken: string;
+}
+
+// Board Types
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  priority: Priority;
+  labels: Label[];
+  assigneeId?: number;
+  assigneeUsername?: string;
+  dueDate?: string;
+  order: number;
+  columnId: string;
+  commentsCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Column {
+  id: string;
+  title: string;
+  order: number;
+  boardId: string;
+  tasks: Task[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Board {
+  id: string;
+  title: string;
+  ownerId: number;
+  ownerUsername: string;
+  columns: Column[];
+  createdAt: string;
+  updatedAt: string;
 }
