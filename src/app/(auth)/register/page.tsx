@@ -43,7 +43,7 @@ export default function RegisterPage() {
       const response = await authApi.register(registerData);
       setAuth(response.user, response.accessToken, response.refreshToken);
       toast.success("Kayıt başarılı!");
-      router.push("/dashboard");
+      router.push("/board");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       toast.error(

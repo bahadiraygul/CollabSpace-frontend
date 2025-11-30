@@ -41,7 +41,7 @@ export default function LoginPage() {
       const response = await authApi.login(data);
       setAuth(response.user, response.accessToken, response.refreshToken);
       toast.success("Giriş başarılı!");
-      router.push("/dashboard");
+      router.push("/board");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       toast.error(

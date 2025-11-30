@@ -1,9 +1,10 @@
 export interface User {
   id: string;
+  username: string;
   email: string;
-  firstName: string;
-  lastName: string;
   roles: string[];
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface AuthResponse {
@@ -73,6 +74,8 @@ export interface Board {
   ownerId: number;
   ownerUsername: string;
   columns: Column[];
+  isPublic: boolean;
+  shareToken?: string;
   createdAt: string;
   updatedAt: string;
 }

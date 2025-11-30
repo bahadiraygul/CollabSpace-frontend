@@ -7,11 +7,17 @@ export const boardApi = {
 
   getById: (id: string) => api.get<Board>(`/api/boards/${id}`),
 
+  getByShareToken: (token: string) => api.get<Board>(`/api/boards/shared/${token}`),
+
   create: (title: string) => api.post<Board>('/api/boards', { title }),
 
   update: (id: string, title: string) => api.put<Board>(`/api/boards/${id}`, { title }),
 
   delete: (id: string) => api.delete(`/api/boards/${id}`),
+
+  generateShareToken: (id: string) => api.post<Board>(`/api/boards/${id}/share`),
+
+  disableSharing: (id: string) => api.delete(`/api/boards/${id}/share`),
 };
 
 // Column APIs
@@ -59,7 +65,7 @@ export interface UpdateTaskRequest {
 
 export interface MoveTaskRequest {
   targetColumnId: string;
-  newOrder: number;
+  newIndex: number;
 }
 
 export const taskApi = {

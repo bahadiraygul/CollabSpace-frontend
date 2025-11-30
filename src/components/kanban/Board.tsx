@@ -17,6 +17,7 @@ import { Column } from './Column';
 import { TaskCard } from './TaskCard';
 import { AddTaskForm } from './AddTaskForm';
 import { TaskModal } from './TaskModal';
+import { ShareButton } from './ShareButton';
 import { useBoardStore } from '@/store/board-store';
 import { Task } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,7 @@ export function Board({ boardId }: BoardProps) {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    if (!board) return;
+    if (!board || !board.columns) return;
     const { active } = event;
     const taskId = active.id as string;
 
@@ -62,7 +63,7 @@ export function Board({ boardId }: BoardProps) {
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    if (!board) return;
+    if (!board || !board.columns) return;
     const { active, over } = event;
     if (!over) return;
 
@@ -112,7 +113,7 @@ export function Board({ boardId }: BoardProps) {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    if (!board) return;
+    if (!board || !board.columns) return;
     const { active, over } = event;
     setActiveTask(null);
 
@@ -182,8 +183,21 @@ export function Board({ boardId }: BoardProps) {
     );
   }
 
+  // Ensure columns is an array
+  const columns = Array.isArray(board.columns) ? board.columns : [];
+
+  if (!Array.isArray(board.columns)) {
+    console.error('Board columns is not an array:', board);
+  }
+
   return (
-    <div className="h-full">
+    <div className="h-full flex flex-col">
+      {/* Header with board title and share button */}
+      <div className="flex items-center justify-between px-6 py-4 border-b">
+        <h1 className="text-2xl font-bold">{board.title}</h1>
+        <ShareButton />
+      </div>
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -191,8 +205,8 @@ export function Board({ boardId }: BoardProps) {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 p-6 overflow-x-auto h-full">
-          {board.columns.map((column) => (
+        <div className="flex gap-4 p-6 overflow-x-auto flex-1">
+          {columns.map((column) => (
             <div key={column.id}>
               {addingTaskToColumn === column.id ? (
                 <div className="w-72 min-w-72">

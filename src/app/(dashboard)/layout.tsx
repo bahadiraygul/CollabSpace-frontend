@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
-import { LayoutDashboard, Kanban, LogOut } from "lucide-react";
+import { Kanban, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({
@@ -36,7 +36,6 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/board", label: "Board", icon: Kanban },
   ];
 
@@ -67,7 +66,7 @@ export default function DashboardLayout({
         <div className="flex items-center gap-4">
           {user && (
             <span className="text-sm text-gray-600">
-              {user.firstName} {user.lastName}
+              {user.username}
             </span>
           )}
           <button

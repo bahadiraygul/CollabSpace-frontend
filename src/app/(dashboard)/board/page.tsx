@@ -1,43 +1,49 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Board } from '@/components/kanban';
-import { Loader2 } from 'lucide-react';
-import { boardApi } from '@/lib/board-api';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { Board } from "@/components/kanban/Board";
+import { boardApi } from "@/lib/board-api";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-function BoardContent() {
-  const searchParams = useSearchParams();
-  const boardIdParam = searchParams.get('id');
-  const [boardId, setBoardId] = useState<string | null>(boardIdParam);
-  const [isLoading, setIsLoading] = useState(!boardIdParam);
+export default function BoardPage() {
+  const [boardId, setBoardId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!boardIdParam) {
-      // Fetch first board if no ID provided
-      const fetchFirstBoard = async () => {
-        try {
-          const response = await boardApi.getAll();
-          if (response.data.length > 0) {
-            setBoardId(response.data[0].id);
-          } else {
-            setError('No boards found. Create a board first.');
-          }
-        } catch (err: any) {
-          setError(err.message || 'Failed to fetch boards');
-        } finally {
-          setIsLoading(false);
+    const fetchOrCreateBoard = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Try to get user's boards
+        const response = await boardApi.getAll();
+
+        if (response.data.length > 0) {
+          // Use the first board
+          setBoardId(response.data[0].id);
+        } else {
+          // No boards exist, create a default one
+          const newBoard = await boardApi.create("My Board");
+          setBoardId(newBoard.data.id);
+          toast.success("Yeni board oluşturuldu!");
         }
-      };
-      fetchFirstBoard();
-    }
-  }, [boardIdParam]);
+      } catch (err: any) {
+        console.error("Failed to fetch or create board:", err);
+        setError(err.response?.data?.message || "Board yüklenemedi");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrCreateBoard();
+  }, []);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
       </div>
     );
@@ -45,10 +51,12 @@ function BoardContent() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+          <Button onClick={() => window.location.reload()}>
+            Tekrar Dene
+          </Button>
         </div>
       </div>
     );
@@ -56,29 +64,15 @@ function BoardContent() {
 
   if (!boardId) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">No board selected</p>
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <p className="text-gray-500">Board bulunamadı</p>
       </div>
     );
   }
 
-  return <Board boardId={boardId} />;
-}
-
-export default function BoardPage() {
   return (
-    <div className="h-[calc(100vh-64px)] bg-gray-50">
-      <div className="p-6 border-b bg-white">
-        <h1 className="text-2xl font-bold text-gray-900">Project Board</h1>
-        <p className="text-gray-500 mt-1">Drag and drop tasks between columns to update their status</p>
-      </div>
-      <Suspense fallback={
-        <div className="flex items-center justify-center h-full">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
-      }>
-        <BoardContent />
-      </Suspense>
+    <div className="h-[calc(100vh-4rem)]">
+      <Board boardId={boardId} />
     </div>
   );
 }
