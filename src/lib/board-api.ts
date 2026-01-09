@@ -1,23 +1,23 @@
 import { api } from './api';
-import { Board, Column, Task, Label, Priority } from '@/types';
+import { Board, Column, Task, Label, Priority, BoardDTO, CreateBoardRequest, UpdateBoardRequest } from '@/types';
 
 // Board APIs
 export const boardApi = {
-  getAll: () => api.get<Board[]>('/api/boards'),
+  getAll: () => api.get<BoardDTO[]>('/api/boards'),
 
   getById: (id: string) => api.get<Board>(`/api/boards/${id}`),
 
   getByShareToken: (token: string) => api.get<Board>(`/api/boards/shared/${token}`),
 
-  create: (title: string) => api.post<Board>('/api/boards', { title }),
+  create: (data: CreateBoardRequest) => api.post<BoardDTO>('/api/boards', data),
 
-  update: (id: string, title: string) => api.put<Board>(`/api/boards/${id}`, { title }),
+  update: (id: string, data: UpdateBoardRequest) => api.put<BoardDTO>(`/api/boards/${id}`, data),
 
   delete: (id: string) => api.delete(`/api/boards/${id}`),
 
   generateShareToken: (id: string) => api.post<Board>(`/api/boards/${id}/share`),
 
-  disableSharing: (id: string) => api.delete(`/api/boards/${id}/share`),
+  disableSharing: (id: string) => api.delete<Board>(`/api/boards/${id}/share`),
 };
 
 // Column APIs

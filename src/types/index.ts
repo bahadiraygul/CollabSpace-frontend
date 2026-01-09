@@ -36,6 +36,29 @@ export interface RefreshRequest {
 // Board Types
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 
+// Board List DTO (for /api/boards endpoint)
+export interface BoardDTO {
+  id: string;
+  title: string;
+  description?: string;
+  ownerId: number;
+  ownerUsername: string;
+  isPublic: boolean;
+  shareToken?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBoardRequest {
+  title: string;
+  description?: string;
+}
+
+export interface UpdateBoardRequest {
+  title?: string;
+  description?: string;
+}
+
 export interface Label {
   id: string;
   name: string;

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
-import { Kanban, LogOut } from "lucide-react";
+import { LayoutGrid, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({
@@ -36,7 +36,7 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { href: "/board", label: "Board", icon: Kanban },
+    { href: "/boards", label: "Boards", icon: LayoutGrid },
   ];
 
   return (
