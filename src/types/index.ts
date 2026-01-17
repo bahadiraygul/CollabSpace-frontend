@@ -102,3 +102,37 @@ export interface Board {
   createdAt: string;
   updatedAt: string;
 }
+
+// API Error Types
+export interface ApiErrorResponse {
+  message: string;
+  status?: number;
+  errors?: Record<string, string[]>;
+  timestamp?: string;
+  path?: string;
+}
+
+export interface ApiError {
+  response?: {
+    data?: ApiErrorResponse;
+    status?: number;
+  };
+  message: string;
+  code?: string;
+}
+
+// Type guard for API errors
+export function isApiError(error: unknown): error is ApiError {
+  return typeof error === 'object' && error !== null && 'message' in error;
+}
+
+// Helper to extract error message from API errors
+export function getErrorMessage(error: unknown, fallbackMessage = 'Bir hata oluştu'): string {
+  if (isApiError(error)) {
+    return error.response?.data?.message || error.message || fallbackMessage;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return fallbackMessage;
+}

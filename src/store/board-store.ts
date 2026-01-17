@@ -1,6 +1,13 @@
 import { create } from 'zustand';
-import { Board, Task, Label, Column } from '@/types';
-import { boardApi, columnApi, taskApi, labelApi, CreateTaskRequest, UpdateTaskRequest } from '@/lib/board-api';
+import { Board, Task, Label, Column, getErrorMessage } from '@/types';
+import {
+  boardApi,
+  columnApi,
+  taskApi,
+  labelApi,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+} from '@/lib/board-api';
 
 interface BoardState {
   board: Board | null;
@@ -21,7 +28,12 @@ interface BoardState {
   addTask: (columnId: string, task: CreateTaskRequest) => Promise<void>;
   updateTask: (taskId: string, updates: UpdateTaskRequest) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
-  moveTask: (taskId: string, sourceColumnId: string, targetColumnId: string, newIndex: number) => Promise<void>;
+  moveTask: (
+    taskId: string,
+    sourceColumnId: string,
+    targetColumnId: string,
+    newIndex: number
+  ) => Promise<void>;
 
   // Column actions
   addColumn: (title: string) => Promise<void>;
@@ -35,7 +47,12 @@ interface BoardState {
   addTaskLocal: (task: Task) => void;
   updateTaskLocal: (taskId: string, updates: Partial<Task>) => void;
   deleteTaskLocal: (taskId: string) => void;
-  moveTaskLocal: (taskId: string, sourceColumnId: string, targetColumnId: string, newIndex: number) => void;
+  moveTaskLocal: (
+    taskId: string,
+    sourceColumnId: string,
+    targetColumnId: string,
+    newIndex: number
+  ) => void;
   addColumnLocal: (column: Column) => void;
   updateColumnLocal: (columnId: string, title: string) => void;
   deleteColumnLocal: (columnId: string) => void;
@@ -44,6 +61,7 @@ interface BoardState {
   setSelectedTask: (task: Task | null) => void;
   openTaskModal: (task: Task) => void;
   closeTaskModal: () => void;
+  clearError: () => void;
 }
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -64,8 +82,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         board.columns = [];
       }
       set({ board, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to fetch board', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Board yüklenemedi'), isLoading: false });
     }
   },
 
@@ -79,8 +97,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         board.columns = [];
       }
       set({ board, isLoading: false });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to fetch shared board', isLoading: false });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Paylaşılan board yüklenemedi'), isLoading: false });
     }
   },
 
@@ -93,8 +111,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     try {
       const response = await boardApi.generateShareToken(boardId);
       set({ board: response.data });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to generate share link' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Paylaşım linki oluşturulamadı') });
       throw error;
     }
   },
@@ -106,8 +124,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     try {
       const response = await boardApi.disableSharing(boardId);
       set({ board: response.data });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to disable sharing' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Paylaşım devre dışı bırakılamadı') });
       throw error;
     }
   },
@@ -116,8 +134,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     try {
       const response = await labelApi.getAll();
       set({ labels: response.data });
-    } catch (error: any) {
-      console.error('Failed to fetch labels:', error);
+    } catch (error: unknown) {
+      console.error('Etiketler yüklenemedi:', error);
     }
   },
 
@@ -132,15 +150,13 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           board: {
             ...state.board,
             columns: state.board.columns.map((col) =>
-              col.id === columnId
-                ? { ...col, tasks: [...col.tasks, newTask] }
-                : col
+              col.id === columnId ? { ...col, tasks: [...col.tasks, newTask] } : col
             ),
           },
         };
       });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to add task' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Görev eklenemedi') });
       throw error;
     }
   },
@@ -157,17 +173,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
             ...state.board,
             columns: state.board.columns.map((col) => ({
               ...col,
-              tasks: col.tasks.map((task) =>
-                task.id === taskId ? updatedTask : task
-              ),
+              tasks: col.tasks.map((task) => (task.id === taskId ? updatedTask : task)),
             })),
           },
-          selectedTask:
-            state.selectedTask?.id === taskId ? updatedTask : state.selectedTask,
+          selectedTask: state.selectedTask?.id === taskId ? updatedTask : state.selectedTask,
         };
       });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to update task' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Görev güncellenemedi') });
       throw error;
     }
   },
@@ -190,8 +203,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           isTaskModalOpen: state.selectedTask?.id === taskId ? false : state.isTaskModalOpen,
         };
       });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to delete task' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Görev silinemedi') });
       throw error;
     }
   },
@@ -202,14 +215,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
     try {
       await taskApi.move(taskId, { targetColumnId, newIndex });
-    } catch (error: any) {
-      console.error('Move task error:', error.response?.data);
+    } catch (error: unknown) {
+      console.error('Görev taşıma hatası:', error);
       // Revert on error - refetch board
       const boardId = get().board?.id;
       if (boardId) {
         get().fetchBoard(boardId);
       }
-      set({ error: error.response?.data?.message || error.message || 'Failed to move task' });
+      set({ error: getErrorMessage(error, 'Görev taşınamadı') });
       throw error;
     }
   },
@@ -233,8 +246,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           },
         };
       });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to add column' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Sütun eklenemedi') });
       throw error;
     }
   },
@@ -254,8 +267,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           },
         };
       });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to update column' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Sütun güncellenemedi') });
       throw error;
     }
   },
@@ -275,13 +288,18 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           },
         };
       });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || error.message || 'Failed to delete column' });
+    } catch (error: unknown) {
+      set({ error: getErrorMessage(error, 'Sütun silinemedi') });
       throw error;
     }
   },
 
-  moveTaskLocal: (taskId: string, sourceColumnId: string, targetColumnId: string, newIndex: number) => {
+  moveTaskLocal: (
+    taskId: string,
+    sourceColumnId: string,
+    targetColumnId: string,
+    newIndex: number
+  ) => {
     set((state) => {
       if (!state.board) return state;
 
@@ -338,9 +356,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         board: {
           ...state.board,
           columns: state.board.columns.map((col) =>
-            col.id === columnId
-              ? { ...col, tasks: [...col.tasks, task] }
-              : col
+            col.id === columnId ? { ...col, tasks: [...col.tasks, task] } : col
           ),
         },
       };
@@ -356,9 +372,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           ...state.board,
           columns: state.board.columns.map((col) => ({
             ...col,
-            tasks: col.tasks.map((task) =>
-              task.id === taskId ? { ...task, ...updates } : task
-            ),
+            tasks: col.tasks.map((task) => (task.id === taskId ? { ...task, ...updates } : task)),
           })),
         },
         selectedTask:
@@ -431,4 +445,5 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   setSelectedTask: (task) => set({ selectedTask: task }),
   openTaskModal: (task) => set({ selectedTask: task, isTaskModalOpen: true }),
   closeTaskModal: () => set({ isTaskModalOpen: false, selectedTask: null }),
+  clearError: () => set({ error: null }),
 }));

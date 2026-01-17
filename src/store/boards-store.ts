@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { BoardDTO, CreateBoardRequest } from '@/types';
+import { BoardDTO, CreateBoardRequest, getErrorMessage } from '@/types';
 import { boardApi } from '@/lib/board-api';
 
 interface BoardsState {
@@ -13,9 +13,10 @@ interface BoardsState {
   createBoard: (data: CreateBoardRequest) => Promise<BoardDTO | null>;
   deleteBoard: (id: string) => Promise<void>;
   updateBoard: (id: string, title: string) => Promise<void>;
+  clearError: () => void;
 }
 
-export const useBoardsStore = create<BoardsState>((set, get) => ({
+export const useBoardsStore = create<BoardsState>((set) => ({
   boards: [],
   isLoading: false,
   error: null,
@@ -25,9 +26,9 @@ export const useBoardsStore = create<BoardsState>((set, get) => ({
     try {
       const response = await boardApi.getAll();
       set({ boards: response.data, isLoading: false });
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.response?.data?.message || error.message || 'Board\'lar yüklenemedi',
+        error: getErrorMessage(error, "Board'lar yüklenemedi"),
         isLoading: false,
       });
     }
@@ -41,9 +42,9 @@ export const useBoardsStore = create<BoardsState>((set, get) => ({
         boards: [...state.boards, newBoard],
       }));
       return newBoard;
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.response?.data?.message || error.message || 'Board oluşturulamadı',
+        error: getErrorMessage(error, 'Board oluşturulamadı'),
       });
       throw error;
     }
@@ -55,9 +56,9 @@ export const useBoardsStore = create<BoardsState>((set, get) => ({
       set((state) => ({
         boards: state.boards.filter((board) => board.id !== id),
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.response?.data?.message || error.message || 'Board silinemedi',
+        error: getErrorMessage(error, 'Board silinemedi'),
       });
       throw error;
     }
@@ -67,15 +68,15 @@ export const useBoardsStore = create<BoardsState>((set, get) => ({
     try {
       const response = await boardApi.update(id, { title });
       set((state) => ({
-        boards: state.boards.map((board) =>
-          board.id === id ? response.data : board
-        ),
+        boards: state.boards.map((board) => (board.id === id ? response.data : board)),
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
-        error: error.response?.data?.message || error.message || 'Board güncellenemedi',
+        error: getErrorMessage(error, 'Board güncellenemedi'),
       });
       throw error;
     }
   },
+
+  clearError: () => set({ error: null }),
 }));
